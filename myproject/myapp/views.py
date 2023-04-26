@@ -2,18 +2,21 @@ from django.shortcuts import render
 
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-
-
-class MyTokenObtainPairView(TokenObtainPairView):
-    serializer_class = TokenObtainPairSerializer
-
-
 from django.http import FileResponse
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework import status
 from rest_framework.response import Response
 from .utils import pdf_to_excel
+from .serializers import MyTokenObtainPairSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
+
+
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = TokenObtainPairSerializer
+
+
+
 
 
 def post(request, *args, **kwargs):
@@ -33,11 +36,6 @@ def post(request, *args, **kwargs):
 
 class FileUploadView(APIView):
     parser_classes = (MultiPartParser, FormParser)
-
-
-from .serializers import MyTokenObtainPairSerializer
-from rest_framework_simplejwt.views import TokenObtainPairView
-
 
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
