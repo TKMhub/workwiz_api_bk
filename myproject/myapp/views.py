@@ -1,7 +1,5 @@
 from django.shortcuts import render
-
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.http import FileResponse
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -9,14 +7,21 @@ from rest_framework import status
 from rest_framework.response import Response
 from .utils import pdf_to_excel
 from .serializers import MyTokenObtainPairSerializer
-from rest_framework_simplejwt.views import TokenObtainPairView
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_nickname(request):
+    user = request.user
+    return Response({"nickname": user.nickname})
 
 
 class MyTokenObtainPairView(TokenObtainPairView):
-    serializer_class = TokenObtainPairSerializer
-
-
-
+    serializer_class = MyTokenObtainPairSerializer
 
 
 def post(request, *args, **kwargs):
@@ -36,6 +41,3 @@ def post(request, *args, **kwargs):
 
 class FileUploadView(APIView):
     parser_classes = (MultiPartParser, FormParser)
-
-class MyTokenObtainPairView(TokenObtainPairView):
-    serializer_class = MyTokenObtainPairSerializer
