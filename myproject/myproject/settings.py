@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-8i8=%%ccplzi@0yh6+7b_oj%s!j+)$r8h+^7=p*_ut@c&k^^&6
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'workwiz-api.onrender.com']
 
 
 # Application definition
@@ -137,7 +137,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Tokyo'
 
 USE_I18N = True
 
