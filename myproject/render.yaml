@@ -10,7 +10,7 @@ services:
     plan: free
     env: python
     buildCommand: "./build.sh"
-    startCommand: "gunicorn next_python_restapi.wsgi:application"
+    startCommand: "gunicorn myproject.wsgi:application"
     envVars:
       - key: DATABASE_URL
         fromDatabase:
