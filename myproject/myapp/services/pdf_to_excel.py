@@ -1,5 +1,3 @@
-# pdf_conversion/services/pdf_to_excel.py
-
 import os
 import tempfile
 import PyPDF2
