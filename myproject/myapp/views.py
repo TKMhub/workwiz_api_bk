@@ -2,15 +2,17 @@ import os
 
 from django.contrib.auth import authenticate
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework_jwt.settings import api_settings
-from django.http import HttpResponse
+
+import tabula
+from django.http import FileResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.core.files.storage import FileSystemStorage
-from django.conf import settings
-from .services.pdf_to_excel import convert_pdf_to_excel
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+import pandas as pd
+import io
 
 jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
 jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
@@ -35,20 +37,16 @@ def login(request):
     return Response({'token': jwt_token}, status=status.HTTP_200_OK)
 
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 @csrf_exempt
-def upload_pdf(request):
-    if request.method == 'POST':
-        uploaded_file = request.FILES['file']
-        fs = FileSystemStorage()
-        file_name = fs.save(uploaded_file.name, uploaded_file)
-        pdf_file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+def convert_pdf_to_excel(request):
+    pdf_file = request.FILES['pdf']
+    dfs = tabula.read_pdf(pdf_file.temporary_file_path(), pages='all')
 
-        # PDFファイルをExcelファイルに変換
-        excel_file_path = convert_pdf_to_excel(pdf_file_path)  # ここで関数を利用します。
-
-        # Excelファイルをレスポンスとして返す
-        with open(excel_file_path, 'rb') as f:
-            response = HttpResponse(f.read(),
-                                    content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-            response['Content-Disposition'] = 'attachment; filename=output.xlsx'
-            return response
+    with io.BytesIO() as buffer:
+        with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+            for i, df in enumerate(dfs):
+                df.to_excel(writer, sheet_name=f'Page {i + 1}', index=False)
+        buffer.seek(0)
+        return FileResponse(buffer, as_attachment=True, filename='converted.xlsx')
