@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import os
 from pathlib import Path
 from datetime import timedelta
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,16 +22,27 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-8i8=%%ccplzi@0yh6+7b_oj%s!j+)$r8h+^7=p*_ut@c&k^^&6'
+# プロジェクトのルートディレクトリを取得
+project_root = os.path.expanduser(os.path.dirname(os.path.dirname(__file__)))
+
+# .env.local ファイルのパスを生成
+dotenv_path = os.path.join(project_root, '.env.local')
+
+# .env.local ファイルが存在する場合に読み込む
+if os.path.exists(dotenv_path):
+    load_dotenv(dotenv_path)
+
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
+
+if not SECRET_KEY:
+    raise ValueError("The SECRET_KEY environment variable is not set!")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'workwiz-api.onrender.com']
 
-
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
