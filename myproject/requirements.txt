@@ -26,5 +26,7 @@ typing-extensions==4.5.0
 urllib3==1.26.15
 wheel==0.38.4
 pandas==1.3.4
-tabula-py==2.2.0
 python-dotenv
+pdfplumber==0.5.28
+pdfminer.six>=20201018
+

@@ -1,4 +1,7 @@
 import os
+import pandas as pd
+import io
+import pdfplumber
 
 from django.contrib.auth import authenticate
 from rest_framework import status
@@ -6,14 +9,10 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
-import tempfile
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from django.http import FileResponse
-import pandas as pd
-import io
-import tabula
 
 
 @api_view(['POST'])
@@ -49,8 +48,12 @@ def convert_pdf_to_excel(request):
         for chunk in pdf_file.chunks():
             temp_file.write(chunk)
 
-    # Now, you can use temp_file.name to get the path to the temporary file.
-    dfs = tabula.read_pdf(temp_file.name, pages='all')
+    dfs = []
+    with pdfplumber.open(temp_file.name) as pdf:
+        for page in pdf.pages:
+            table = page.extract_table()  # Extract the table
+            if table:
+                dfs.append(pd.DataFrame(table[1:], columns=table[0]))
 
     # Don't forget to remove the temporary file when you're done with it.
     os.unlink(temp_file.name)
