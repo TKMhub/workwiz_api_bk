@@ -13,6 +13,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from django.http import FileResponse
+import tempfile
 
 
 @api_view(['POST'])
@@ -60,8 +61,12 @@ def convert_pdf_to_excel(request):
 
     buffer = io.BytesIO()
     with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
-        for i, df in enumerate(dfs):
-            df.to_excel(writer, sheet_name=f'Page {i + 1}', index=False)
+        if not dfs:
+            # If no tables were extracted from the PDF, create an empty sheet.
+            writer.book.create_sheet("No Tables Extracted")
+        else:
+            for i, df in enumerate(dfs):
+                df.to_excel(writer, sheet_name=f'Page {i + 1}', index=False)
     buffer.seek(0)
     response = FileResponse(buffer, as_attachment=True, filename='converted.xlsx')
 
