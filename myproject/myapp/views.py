@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from rest_framework_jwt.settings import api_settings
+from rest_framework_simplejwt.tokens import RefreshToken
 
 import tabula
 from django.http import FileResponse
@@ -13,9 +13,6 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 import pandas as pd
 import io
-
-jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
-jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
 
 
 @api_view(['POST'])
@@ -32,9 +29,12 @@ def login(request):
         return Response({'error': 'Invalid Credentials'},
                         status=status.HTTP_404_NOT_FOUND)
 
-    payload = jwt_payload_handler(user)
-    jwt_token = jwt_encode_handler(payload)
-    return Response({'token': jwt_token}, status=status.HTTP_200_OK)
+    refresh = RefreshToken.for_user(user)
+
+    return Response({
+        'refresh': str(refresh),
+        'access': str(refresh.access_token),
+    }, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
