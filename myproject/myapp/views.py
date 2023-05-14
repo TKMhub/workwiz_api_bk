@@ -6,13 +6,14 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
-import tabula
-from django.http import FileResponse
+import tempfile
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
+from django.http import FileResponse
 import pandas as pd
 import io
+import tabula
 
 
 @api_view(['POST'])
@@ -42,11 +43,23 @@ def login(request):
 @csrf_exempt
 def convert_pdf_to_excel(request):
     pdf_file = request.FILES['pdf']
-    dfs = tabula.read_pdf(pdf_file.temporary_file_path(), pages='all')
 
-    with io.BytesIO() as buffer:
-        with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
-            for i, df in enumerate(dfs):
-                df.to_excel(writer, sheet_name=f'Page {i + 1}', index=False)
-        buffer.seek(0)
-        return FileResponse(buffer, as_attachment=True, filename='converted.xlsx')
+    # Create a temporary file and write the uploaded file's content to it.
+    with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+        for chunk in pdf_file.chunks():
+            temp_file.write(chunk)
+
+    # Now, you can use temp_file.name to get the path to the temporary file.
+    dfs = tabula.read_pdf(temp_file.name, pages='all')
+
+    # Don't forget to remove the temporary file when you're done with it.
+    os.unlink(temp_file.name)
+
+    buffer = io.BytesIO()
+    with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+        for i, df in enumerate(dfs):
+            df.to_excel(writer, sheet_name=f'Page {i + 1}', index=False)
+    buffer.seek(0)
+    response = FileResponse(buffer, as_attachment=True, filename='converted.xlsx')
+
+    return response
