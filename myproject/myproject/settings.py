@@ -38,7 +38,9 @@ if not SECRET_KEY:
     raise ValueError("The SECRET_KEY environment variable is not set!")
 
 # SECURITY WARNING: don't run with debug turned on in production!
+# 開発が終わったらTrueからFalseに変更
 DEBUG = True
+# DEBUG = False
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'workwiz-api.onrender.com']
 
@@ -73,10 +75,11 @@ MIDDLEWARE = [
 ]
 
 
-# Next.jsの開発サーバーのURLを指定
+# Next.jsの開発サーバーのURLを指定　開発が終わったらTrueから以下に変更
 CORS_ORIGIN_ALLOW_ALL = True
 # CORS_ORIGIN_WHITELIST = [
 #     "http://localhost:3000",
+#     "https://workwiz-app.vercel.app",
 # ]
 
 REST_FRAMEWORK = {
