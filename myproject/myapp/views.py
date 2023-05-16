@@ -1,19 +1,22 @@
-import os
-import pandas as pd
-import io
-import pdfplumber
-
 from django.contrib.auth import authenticate
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from django.contrib.auth import get_user_model
+from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+import json
+
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from django.http import FileResponse
 import tempfile
+import os
+import pandas as pd
+import io
+import pdfplumber
 
 
 @api_view(['POST'])
@@ -36,6 +39,26 @@ def login(request):
         'refresh': str(refresh),
         'access': str(refresh.access_token),
     }, status=status.HTTP_200_OK)
+
+
+@csrf_exempt
+def create_user(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        user = get_user_model().objects.create_user(
+            userID=data.get('userID'),
+            email=data.get('email'),
+            password=data.get('password')
+        )
+        # User creation successful, create a token for this user.
+        refresh = RefreshToken.for_user(user)
+        return JsonResponse({
+            'status': 'success',
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+        })
+    else:
+        return JsonResponse({'status': 'not a post request'})
 
 
 @api_view(['POST'])
